@@ -19,6 +19,6 @@ Example:
 This has only been tested on Windows 10 and may need to be modified for cross-platform usage.
 
 ## Acknowledgements
-This application was made using [PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI). I'd also like to express my gratitude to 3Blue 1Brown for making his amazing animation library free for all of us.
+This application was made using [PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI). I'd also like to express my gratitude to [3Blue1Brown](https://github.com/3b1b) for making his amazing animation library free for all of us.
 
 Hope you find this thing useful!

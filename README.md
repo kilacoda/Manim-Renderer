@@ -7,3 +7,18 @@ This can become tedious when rendering many scenes and after making some changes
 
 Example:
 
+![example](example.png)
+
+## Instructions
+* Place this file in the same directory as your manim installation or change the current working directory using `os.chdir("\path\to\manim")`
+* Run the GUI - `py gui.py` (assuming you've changed the cwd to your manim installation)
+* Select file, scene(s) and options and click 'RENDER'.
+* Monitor the rendering in your terminal.
+
+## Note
+This has only been tested on Windows 10 and may need to be modified for cross-platform usage.
+
+## Acknowledgements
+This application was made using [PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI). I'd also like to express my gratitude to 3Blue 1Brown for making his amazing animation library free for all of us.
+
+Hope you find this thing useful!

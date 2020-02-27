@@ -17,7 +17,7 @@ from manimlib.extract_scene import get_scene_classes_from_module
 # sys.path = [".\\manim"]
 
 print(os.getcwd())
-os.chdir("C:\CodeProjects\Python\Manim_and_Related_Stuff\manim")
+os.chdir("C:\manim")
 print(os.getcwd())
 
 

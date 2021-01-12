@@ -282,6 +282,7 @@ def main():
                 sg.popup(*sys.path,title="sys.path")
 
         except Exception as e:
+            console.print_exception()
             sg.PopupError(e, title="Error")
 
         finally:

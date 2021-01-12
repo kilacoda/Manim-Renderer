@@ -19,10 +19,7 @@ import rich.traceback
 
 rich.traceback.install()
 
-from manimlib.scene.scene import Scene
-from manimlib.config import get_module
-from manimlib.extract_scene import get_scene_classes_from_module
-
+from manim.utils.module_ops import get_module,get_scene_classes_from_module
 
 with open("Thumbnail_mini.png", "rb") as logo_file:
     MANIM_LOGO_BASE64 = base64.b64encode(logo_file.read())

@@ -2,34 +2,40 @@
 
 
 import PySimpleGUI as sg
-import inspect as i
 import subprocess
 import shlex
 import re
 import sys
 import os
 from datetime import datetime
-import multiprocessing
-import threading
+from pathlib import Path
 import time
 import math
-import base64
-from rich import print
+
+# import multiprocessing #maybe some day later...
+# import threading
+# import inspect as i #TODO: Why was this here again?
+
+# from rich import print
 import rich.traceback
+import rich.console
 
-rich.traceback.install()
+console = rich.console.Console()
 
-from manim.utils.module_ops import get_module,get_scene_classes_from_module
+rich.traceback.install(console=console)
 
-with open("Thumbnail_mini.png", "rb") as logo_file:
-    MANIM_LOGO_BASE64 = base64.b64encode(logo_file.read())
+from manim.utils.module_ops import get_module, get_scene_classes_from_module
+
+
+MANIM_LOGO_BASE64 = open("logo_b64", "rb").read()
+
 # sys.path = [".\\manim"]
 # sg.theme_previewer(5)
 sg.theme("DarkBlue")
 
 
 def find_scenes(file_path):
-    _file = get_module(file_path)
+    _file = get_module(Path(file_path))
 
     scenes_classes = get_scene_classes_from_module(_file)
 
@@ -40,7 +46,7 @@ def find_scenes(file_path):
 
 def get_quality(values):
     for key in ["l", "m", "p", "s", "g", "i", "t"]:
-        # print(key)
+        # console.print(key)
         if values[key] == True and key != "p":
             return key
         elif values[key] == True and key == "p":
@@ -68,8 +74,8 @@ def render(scene, **values):
     """
     A function which renders each scene in a separate thread
     """
-    print("\n" + "[green]+[/green]-[green]+[/green]" * 50)
-    print(
+    console.print("\n" + "[green]+[/green]-[green]+[/green]" * 50)
+    console.print(
         f"\nRender for [bold yellow]{scene}[/bold yellow] started at: [blue]{datetime.now()}[/blue]\n\n"
     )
     File = values["path"]
@@ -95,7 +101,7 @@ def render(scene, **values):
         command = f"py -m manim {File} {scene} {n} {lpb} --sound"
 
     args = shlex.split(command)
-    print(args)
+    console.print(args)
     # output = threading.Thread(target=lambda:subprocess.Popen(args, stdout=subprocess.PIPE,shell=True,creationflags=subprocess.CREATE_NEW_CONSOLE),daemon=True)
     output = subprocess.Popen(args, shell=True).wait()
     # output.start()
@@ -109,8 +115,14 @@ def render(scene, **values):
 
 def main():
     menu_def = [
-        ["&Open", ["&File", "&Media dir", ["&Tex", "&Videos"]],],
-        ["O&ptions", ["&Change manim", "&Add folder to sys.path", "&Show path"],],
+        [
+            "&Open",
+            ["&File", "&Media dir", ["&Tex", "&Videos"]],
+        ],
+        [
+            "O&ptions",
+            ["&Add folder to sys.path", "&Show path"],
+        ],
     ]
 
     layout = [
@@ -170,15 +182,18 @@ def main():
     ]
     # sg.theme_previewer()
     manim_gui = sg.Window(
-        "Manim Renderer v0.1", layout, resizable=True, icon=MANIM_LOGO_BASE64
+        "Manim Renderer v0.1",
+        layout,
+        resizable=True,
+        icon=MANIM_LOGO_BASE64,  ## TODO: Figure out why the icon doesn't display in the taskbar
     )
-    print("Opened.")
+    console.print("Opened.")
     while True:
         try:
             event, values = manim_gui.read()
             if event != sg.TIMEOUT_KEY:
-                # print(f"Event: {event}")
-                # print(f"Values {values}")
+                # console.print(f"Event: {event}")
+                # console.print(f"Values {values}")
                 pass
 
             if event in (None, "Exit"):
@@ -189,7 +204,7 @@ def main():
 
                 if not has_spaces(File):
                     scenes = find_scenes(File)
-                    print(scenes)
+                    console.print(scenes)
                     manim_gui["scene_select"].Update(values=scenes)
                 else:
                     sg.PopupError("Error: Spaces in file path", title="SpacesError")
@@ -208,11 +223,11 @@ def main():
 
             if event == "RENDER":
                 # scene = " ".join(values["scene_select"])
-                # print(scene)
+                # console.print(scene)
 
-                # print(quality)
+                # console.print(quality)
 
-                # print(args)
+                # console.print(args)
                 start_time = time.time()
                 manim_gui["status"].Update("Rendering")
                 manim_gui.read(timeout=0)
@@ -221,7 +236,7 @@ def main():
                 for scene in values["scene_select"]:
                     values.pop(0)
                     render(scene, **values)
-                # print(output)
+                # console.print(output)
                 sg.SystemTray.notify(
                     "Render complete", "Check console for more details"
                 )
@@ -230,10 +245,10 @@ def main():
                 end_time = time.time()
 
                 render_time = math.trunc(end_time - start_time)
-                print(f"Render complete in {render_time}s ")
+                console.print(f"Render complete in {render_time}s ")
 
-                print("\n" + "[green]+[/green]-[green]+[/green]" * 50)
-                print("\n\n")
+                console.print("\n" + "[green]+[/green]-[green]+[/green]" * 50)
+                console.print("\n\n")
 
             if event == "select_all":
                 manim_gui["scene_select"].Update(set_to_index=list(range(len(scenes))))
@@ -261,25 +276,14 @@ def main():
             if event == "videos":
                 os.system("explorer .\\media\\videos")
 
-            if event == "Change manim":
-                folder_getter = sg.popup_get_folder(
-                    "Select manim location", no_window=True
-                )
-                print("[bold blue]Old[/bold blue] manim path:", os.getcwd())
-                os.chdir(folder_getter)
-                print("[bold red]New[/bold red] manim path:", os.getcwd())
-                
-                sys.path.append(folder_getter)
-                sys.path.pop(0)
-
             if event == "Add folder to sys.path":
                 folder_getter = sg.popup_get_folder("Add folder", no_window=True)
 
                 sys.path.append(folder_getter)
                 manim_gui.refresh()
-                
+
             if event == "Show path":
-                sg.popup(*sys.path,title="sys.path")
+                sg.popup(*sys.path, title="sys.path")
 
         except Exception as e:
             console.print_exception()
@@ -293,4 +297,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

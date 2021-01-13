@@ -74,7 +74,7 @@ def render(scene, **values):
     """
     A function which renders each scene in a separate thread
     """
-    console.print("\n" + "[green]+[/green]-[green]+[/green]" * 50)
+    console.print("\n" + "[green]+[/green]-[green]+[/green]" * (os.get_terminal_size().columns // 3))
     console.print(
         f"\nRender for [bold yellow]{scene}[/bold yellow] started at: [blue]{datetime.now()}[/blue]\n\n"
     )
@@ -90,15 +90,17 @@ def render(scene, **values):
         n = f"-n {start_at}"
     elif not start_at and end_at:
         n = f"-n 0,{end_at}"
+    elif start_at and end_at:
+        n = f"-n {start_at},{end_at}"
     elif not (start_at and end_at):
         n = ""
 
     if preview:
-        command = f"py -m manim {File} {scene} -p{quality} {n} {lpb} --sound"
+        command = f"py -m manim {File} {scene} -p{quality} {n} {lpb}"
     elif not preview and quality != "":
-        command = f"py -m manim {File} {scene} -{quality} {n} {lpb} --sound"
+        command = f"py -m manim {File} {scene} -{quality} {n} {lpb}"
     else:
-        command = f"py -m manim {File} {scene} {n} {lpb} --sound"
+        command = f"py -m manim {File} {scene} {n} {lpb}"
 
     args = shlex.split(command)
     console.print(args)
@@ -201,6 +203,8 @@ def main():
 
             if event == "Get Scenes":
                 File = values["path"]
+                os.chdir(Path(File).parent)
+                # console.print(os.getcwd())
 
                 if not has_spaces(File):
                     scenes = find_scenes(File)
@@ -247,7 +251,7 @@ def main():
                 render_time = math.trunc(end_time - start_time)
                 console.print(f"Render complete in {render_time}s ")
 
-                console.print("\n" + "[green]+[/green]-[green]+[/green]" * 50)
+                console.print("\n" + "[green]+[/green]-[green]+[/green]" * (os.get_terminal_size().columns // 3))
                 console.print("\n\n")
 
             if event == "select_all":
@@ -267,7 +271,8 @@ def main():
                 )
 
                 manim_gui["path"].update(file_path)
-
+                os.chdir(Path(file_path).parent)
+                # console.print(os.getcwd())
                 manim_gui.refresh()
 
             if event == "Tex":

@@ -26,8 +26,7 @@ rich.traceback.install(console=console)
 
 from manim.utils.module_ops import get_module, get_scene_classes_from_module
 
-
-MANIM_LOGO_BASE64 = open("logo_b64", "rb").read()
+MANIM_LOGO_BASE64 = open(Path(__file__).parent.absolute() / "logo_b64.txt", "rb").read()
 
 # sys.path = [".\\manim"]
 # sg.theme_previewer(5)
@@ -45,7 +44,7 @@ def find_scenes(file_path):
 
 
 def get_quality(values):
-    for key in ["l", "m", "p", "s", "g", "i", "t"]:
+    for key in ["l", "m", "p", "s", "g", "i", "t","k"]:
         # console.print(key)
         if values[key] == True and key != "p":
             return key
@@ -74,7 +73,10 @@ def render(scene, **values):
     """
     A function which renders each scene in a separate thread
     """
-    console.print("\n" + "[green]+[/green]-[green]+[/green]" * (os.get_terminal_size().columns // 3))
+    console.print(
+        "\n"
+        + "[green]+[/green]-[green]+[/green]" * (os.get_terminal_size().columns // 3)
+    )
     console.print(
         f"\nRender for [bold yellow]{scene}[/bold yellow] started at: [blue]{datetime.now()}[/blue]\n\n"
     )
@@ -95,12 +97,16 @@ def render(scene, **values):
     elif not (start_at and end_at):
         n = ""
 
-    if preview:
-        command = f"py -m manim {File} {scene} -p{quality} {n} {lpb}"
-    elif not preview and quality != "":
-        command = f"py -m manim {File} {scene} -{quality} {n} {lpb}"
+    if preview and quality != "s":
+        command = f"py -m manim render {File} {scene} -pq{quality} {n} {lpb}"
+    elif preview and quality == "s":
+        command = f"py -m manim render {File} {scene} -p{quality} {n} {lpb}"
+    elif not preview and quality != "" and quality != "s":
+        command = f"py -m manim render {File} {scene} -q{quality} {n} {lpb}"
+    elif not preview and quality == "s":
+        command = f"py -m manim render {File} {scene} -{quality} {n} {lpb}"
     else:
-        command = f"py -m manim {File} {scene} {n} {lpb}"
+        command = f"py -m manim render {File} {scene} {n} {lpb}"
 
     args = shlex.split(command)
     console.print(args)
@@ -115,7 +121,15 @@ def render(scene, **values):
     #         break
 
 
-def main():
+def main(_file=None):
+    """
+    This function is the entry point to the renderer.
+    Pass in the file you want to to have it in the file inputbox by default.
+    for e.g.:
+    `main(__file__)`
+    """
+    _File = "" if _file is None else _file
+
     menu_def = [
         [
             "&Open",
@@ -131,7 +145,7 @@ def main():
         [sg.Menu(menu_def)],
         [
             sg.T("Choose file: "),
-            sg.Input("", key="path", size=(100, 1)),
+            sg.Input(_File, key="path", size=(100, 1)),
             sg.FileBrowse(target="path", key="get_file"),
         ],
         [
@@ -163,8 +177,9 @@ def main():
             sg.Radio("g", key="g", group_id="quality"),
             sg.Radio("i", key="i", group_id="quality"),
             sg.Radio("t", key="t", group_id="quality"),
+            sg.Radio("k", key="k", group_id="quality"),
             sg.Checkbox("Preview?", default=True, key="preview_bool"),
-            sg.Checkbox("Leave progress bars?", default=True, key="lpb_bool"),
+            sg.Checkbox("Leave progress bars?", default=False, key="lpb_bool"),
         ],
         [
             sg.T("Specify animation "),
@@ -194,6 +209,7 @@ def main():
         try:
             event, values = manim_gui.read()
             if event != sg.TIMEOUT_KEY:
+                ## Uncomment these if debugging
                 # console.print(f"Event: {event}")
                 # console.print(f"Values {values}")
                 pass
@@ -238,7 +254,8 @@ def main():
 
                 ## This is where the multiple rendering thing takes place if applicable
                 for scene in values["scene_select"]:
-                    values.pop(0)
+                    values.pop(0, None)
+                    # console.print(scene, values)  ## Use while debugging
                     render(scene, **values)
                 # console.print(output)
                 sg.SystemTray.notify(
@@ -251,7 +268,11 @@ def main():
                 render_time = math.trunc(end_time - start_time)
                 console.print(f"Render complete in {render_time}s ")
 
-                console.print("\n" + "[green]+[/green]-[green]+[/green]" * (os.get_terminal_size().columns // 3))
+                console.print(
+                    "\n"
+                    + "[green]+[/green]-[green]+[/green]"
+                    * (os.get_terminal_size().columns // 3)
+                )
                 console.print("\n\n")
 
             if event == "select_all":

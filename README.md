@@ -1,4 +1,7 @@
 # Manim Renderer
+> **NOTE**: This repository is not being actively maintained anymore. The CLI interface for manim has improved quite a bit in the past year or two, and now we have even more exciting things such as [manim-sideview](https://github.com/Rickaym/Manim-Sideview) that are worth checking out, thus I'm archiving manim-renderer. 
+
+
 Normally, to render a [manim](https://github.com/3b1b/manim) scene, one uses the following command:
 
 `[py | python | python3 -m] manim /path/to/file.py <scene_name(s)> [options] `
